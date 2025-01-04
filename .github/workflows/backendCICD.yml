@@ -20,16 +20,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 3. MySQL Docker 이미지 빌드 및 푸시
-      - name: Build MySQL Docker image
-        working-directory: database # docker_test_db 폴더로 이동
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/database .
-
-      - name: Push MySQL Docker image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/database
-
       # 4. Backend Docker 이미지 빌드 및 푸시
       - name: Build Backend Docker image
         run: |
@@ -61,8 +51,6 @@ jobs:
             if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/backend)" ]; then
               sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/backend
             fi
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/database
-            sudo docker run -d -p 3308:3306 --name database -v db_volume:/var/lib/mysql ${{ secrets.DOCKERHUB_USERNAME }}/database
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend
             sudo docker run -d -p 8080:8080 --name backend \
             --add-host=host.docker.internal:172.17.0.1 \
