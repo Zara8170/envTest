@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-COPY .env .env
-
 RUN chmod +x ./gradlew
 RUN ./gradlew clean bootJar
 
