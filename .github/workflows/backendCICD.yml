@@ -3,30 +3,24 @@ name: Build and Push Docker Images
 on:
   push:
     branches:
-      - backend
+      - backend # backend 브랜치에 푸시될 때 실행
 jobs:
   build_and_push: 
     runs-on: ubuntu-latest
 
     steps:
+      # 1. DockerHub 로그인
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 2. Checkout 코드
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build MySQL Docker image
-        working-directory: database
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/database .
-
-      - name: Push MySQL Docker image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/database
-
+      # 4. Backend Docker 이미지 빌드 및 푸시
       - name: Build Backend Docker image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend .
@@ -45,19 +39,14 @@ jobs:
           host: ${{ secrets.EC2_HOST_IP }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            if [ "$(sudo docker ps -a -q -f name=database)" ]; then
-              sudo docker rm -f dockerdb
-            fi 
             if [ "$(sudo docker ps -a -q -f name=backend)" ]; then
-              sudo docker rm -f dockerbackend
-            fi
-            if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/database)" ]; then
-              sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/database
+              sudo docker rm -f backend
             fi
             if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/backend)" ]; then
               sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/backend
             fi
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/database
-            sudo docker run -d -p 3308:3306 --name dockerdb -v db_volume:/var/lib/mysql ${{ secrets.DOCKERHUB_USERNAME }}/database
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend
-            sudo docker run -d -p 8080:8080 --name dockerbackend --add-host=host.docker.internal:172.17.0.1 ${{ secrets.DOCKERHUB_USERNAME }}/backend
+            sudo docker run -d -p 8080:8080 --name backend \
+            --add-host=host.docker.internal:172.17.0.1 \
+            --env-file /home/ubuntu/.env \
+            ${{ secrets.DOCKERHUB_USERNAME }}/backend
