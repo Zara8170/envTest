@@ -56,15 +56,15 @@ app:
 
 # local 데이터베이스 설정
 
-spring:
-  config:
-    activate:
-      on-profile: local
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3308/dailyhub
-    username: root
-    password: 1234
+#spring:
+#  config:
+#    activate:
+#      on-profile: local
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3308/dockerdb
+#    username: root
+#    password: 1234
 
 ---
 
